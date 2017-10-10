@@ -8,6 +8,10 @@
 #include <chrono>
 
 #pragma once
+const int BOARD_WIDTH = 8;
+const int BOARD_HEIGHT = 8;
+const char WHITE_EMPTY = 'w';
+const char BLACK_EMPTY = 'b';
 
 namespace draughts
 {
@@ -36,6 +40,14 @@ namespace draughts
             static model * get_instance(void);
             static void delete_instance(void);
             virtual ~model(void);
+            void legal_board(void);
+            
+        private:
+            std::map<int, std::string> m_players; // pid, players
+            std::map<int, int> m_scores; //pid, score
+            char board[BOARD_WIDTH][BOARD_HEIGHT];
+            int current_player;
+
         };
     }
 }
