@@ -26,6 +26,7 @@ void draughts::ncview::game_window::activate(void)
         }
         try
         {
+            themodel->legal_board();
             std::pair<std::pair<int,int>,std::pair<int,int>> move_coords;
             move_coords = get_move_input();
             themodel->make_move(playernum, move_coords.first.first, 
@@ -46,11 +47,13 @@ std::pair<std::pair<int,int>, std::pair<int,int>>
     std::pair<std::pair<int,int>,std::pair<int,int>> move;
     std::pair<int,int> start;
     std::pair<int,int> end;
-    std::cout << "Please enter your next move: " ;
-    get_input(input);
+    std::string prompt=  "Please enter your next move: ";
+    input = get_input(prompt);
     std::vector<std::string> moves;
     std::vector<std::string> coords;
     boost::split(moves, input, [](char ch){return ch == '-';});
+    std::cout << "Moves size: " << moves.size() << std::endl;
+
     start = strtocoord(moves[0]);
     end = strtocoord(moves[1]);
     move = std::make_pair(start, end);

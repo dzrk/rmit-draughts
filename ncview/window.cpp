@@ -19,6 +19,7 @@ std::string draughts::ncview::window::get_input(
         try{
             std::getline(std::cin, input);
             if(input.empty()){
+                std::cout<< "EMPTY" << std::endl;
                 if(std::cin.eof()){
                     std::cin.clear();
                 }
@@ -31,5 +32,6 @@ std::string draughts::ncview::window::get_input(
             throw;
         }
     }
+    
     return input;
 }
