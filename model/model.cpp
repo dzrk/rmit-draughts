@@ -210,6 +210,7 @@ void draughts::model::model::legal_board(void)
         }
     }
 }
+<<<<<<< HEAD
 char draughts::model::model:: cell_to_char(Cell v)
 {
     switch (v)
@@ -223,4 +224,20 @@ char draughts::model::model:: cell_to_char(Cell v)
         default:
             return '\0';
     }
+=======
+
+bool draughts::model::model::boundaryCheck(int x_coord, int y_coord)
+{
+	if(x_coord > BOARD_WIDTH || x_coord < BOARD_WIDTH_MIN)
+	{
+		return false;
+	}
+	
+	if(y_coord > BOARD_HEIGHT || y_coord < BOARD_HEIGHT_MIN)
+	{
+		return false;make
+	}
+	
+	return true;
+>>>>>>> e3f5cb71556e51f134224b39b3c5e7fff3589fff
 }
