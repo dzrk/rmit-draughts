@@ -29,7 +29,6 @@ typedef enum cell
 } Cell;
 
 
-
 namespace draughts
 {
     namespace model
@@ -58,6 +57,7 @@ namespace draughts
             static void delete_instance(void);
             virtual ~model(void);
             void legal_board(void);
+            char cell_to_char(Cell v);
             
         private:
             std::map<int, std::string> m_players; // pid, players

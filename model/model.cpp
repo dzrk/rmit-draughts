@@ -50,12 +50,16 @@ void draughts::model::model::start_game(int plr1, int plr2)
         for (int y = 0; y < BOARD_WIDTH; y++)
         {
             if(BOARD_STATE[x][y] == EMPTY){
-                std::cout << BLANK;
+                Cell cell = EMPTY;
+                std::cout << cell_to_char(cell);
             }else if(BOARD_STATE[x][y] == P1){
-                std::cout << X_TOKEN;
+                Cell cell = P1;
+                std::cout << cell_to_char(cell);
 
             }else if(BOARD_STATE[x][y] == P2){
-                std::cout << O_TOKEN;
+                Cell cell = P2;
+
+                std::cout << cell_to_char(cell);
 
             }
         }
@@ -86,12 +90,14 @@ char draughts::model::model::get_token(int x ,int y)
     int row = x - 1;
     int column = y - 1;
     if(BOARD_STATE[row][column] == EMPTY){
-        return BLANK;
+        Cell cell = EMPTY;
+        return cell_to_char(cell);
     }else if(BOARD_STATE[row][column] == P1){
-        return X_TOKEN;
-        
+        Cell cell = P1;
+        return cell_to_char(cell);
     }else if(BOARD_STATE[row][column] == P2){
-        return O_TOKEN;
+        Cell cell = P2;
+        return cell_to_char(cell);
         
     }
     return '\0';
@@ -203,5 +209,18 @@ void draughts::model::model::legal_board(void)
             }
         }
     }
-    
+}
+char draughts::model::model:: cell_to_char(Cell v)
+{
+    switch (v)
+    {
+        case EMPTY:
+            return BLANK;
+        case P1:
+            return X_TOKEN;
+        case P2:
+            return O_TOKEN;
+        default:
+            return '\0';
+    }
 }
