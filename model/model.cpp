@@ -203,5 +203,19 @@ void draughts::model::model::legal_board(void)
             }
         }
     }
-    
+}
+
+bool draughts::model::model::boundaryCheck(int x_coord, int y_coord)
+{
+	if(x_coord > BOARD_WIDTH || x_coord < BOARD_WIDTH_MIN)
+	{
+		return false;
+	}
+	
+	if(y_coord > BOARD_HEIGHT || y_coord < BOARD_HEIGHT_MIN)
+	{
+		return false;make
+	}
+	
+	return true;
 }
