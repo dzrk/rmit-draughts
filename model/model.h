@@ -9,6 +9,8 @@
 
 #pragma once
 const int BOARD_WIDTH = 8;
+const int BOARD_WIDTH_MIN = 0;
+const int BOARD_HEIGHT_MIN = 0;
 const int BOARD_HEIGHT = 8;
 const char WHITE = 'w';
 const char BLACK = 'b';
@@ -58,6 +60,7 @@ namespace draughts
             virtual ~model(void);
             void legal_board(void);
             char cell_to_char(Cell v);
+            bool boundaryCheck(int,int);
             
         private:
             std::map<int, std::string> m_players; // pid, players
