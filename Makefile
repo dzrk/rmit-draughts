@@ -41,6 +41,9 @@ $(BUILDDIR)/%.o: %.cpp $(HEADERS)
 	@echo "Compiling..."
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 	
+run:
+	./$(PROGRAM)
+
 clean:
 	@echo "Cleaning..."
 	$(RM) $(BUILDDIR)/*.o $(PROGRAM)
@@ -56,6 +59,7 @@ archive:
 help:
 	@echo "Targets:"
 	@echo "make(all) - builds and compiles program"
+	@echo "run       - runs the program"
 	@echo "clean     - deletes object files and executable"
 	@echo "source    - prints line for enabling c++"
 	@echo "archive   - zips relevant files"
