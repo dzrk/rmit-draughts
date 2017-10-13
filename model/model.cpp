@@ -227,15 +227,19 @@ char draughts::model::model:: cell_to_char(Cell v)
 
 bool draughts::model::model::boundaryCheck(int x_coord, int y_coord)
 {
-	if(x_coord > BOARD_WIDTH || x_coord < BOARD_WIDTH_MIN)
+	try
 	{
-		return false;
+		if(x_coord <= BOARD_WIDTH || x_coord >= BOARD_WIDTH_MIN)
+		{
+			if(y_coord <= BOARD_HEIGHT || y_coord >= BOARD_HEIGHT_MIN)
+			{
+				return true;
+			}
+		}
 	}
-	
-	if(y_coord > BOARD_HEIGHT || y_coord < BOARD_HEIGHT_MIN)
+	catch(std::exception& ex)
 	{
-		return false;
+		std::cerr << ex.what() << std::endl;
 	}
-	
-	return true;
+	return false;
 }
