@@ -26,7 +26,7 @@ void draughts::ncview::game_window::activate(void)
         }
         try
         {
-            themodel->legal_board();
+
             std::pair<std::pair<int,int>,std::pair<int,int>> move_coords;
             move_coords = get_move_input();
             themodel->make_move(playernum, move_coords.first.first, 

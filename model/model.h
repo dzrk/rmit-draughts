@@ -60,15 +60,25 @@ namespace draughts
             virtual ~model(void);
             void legal_board(void);
             char cell_to_char(Cell v);
-            bool boundaryCheck(int,int);
+            bool boundary_check(int,int);
+            bool can_move(int,int,int,int); //  x1, y1, x2, y2 - checks specific move
+            bool can_jump(int,int,int,int,int,int); // x1, y1, x2, y2 x3, y3 - checks specific jump
+            char pid_to_token(int);
+            void get_legal_moves(int,int);
+            void check_moves(int,int); // runs can_move in every direction
+            void check_jumps(int,int); // runs can_jump in every direction
+            void actually_move(int,int,int,int); // modifies the BOARD_STATE
             
         private:
             std::map<int, std::string> m_players; // pid, players
             std::map<int, int> m_scores; //pid, score
+            std::map<int, char> m_token; //pid, token
             char board[BOARD_HEIGHT][BOARD_WIDTH];
             int current_player;
             std::vector<int> players;
-
+            std::map<int,int> normal_moves; // moving one space
+            std::map<int,int> jump_moves; // moving two spaces
+            char current_token;
         };
     }
 }
