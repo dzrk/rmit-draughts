@@ -328,6 +328,7 @@ void draughts::model::model::check_moves(int x_start, int y_start){
         normal_moves.insert(std::pair<int,int>(x_down, y_up));      // -1,1
     if(can_move(x_start, y_start, x_down, y_down))
         normal_moves.insert(std::pair<int,int>(x_down, y_down));    // -1,-1
+
 }
 
 void draughts::model::model::get_legal_moves(int x_start, int y_start){

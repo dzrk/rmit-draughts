@@ -1,6 +1,7 @@
 #include <vector>
 #include <memory>
 #include <exception>
+#include <regex>
 
 #pragma once
 

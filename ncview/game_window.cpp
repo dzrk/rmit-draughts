@@ -43,13 +43,23 @@ void draughts::ncview::game_window::activate(void)
 std::pair<std::pair<int,int>, std::pair<int,int>> 
     draughts::ncview::game_window::get_move_input(void)
 {
-    std::string input;
+    bool match = false;
+	std::string input;
     std::pair<std::pair<int,int>,std::pair<int,int>> move;
     std::pair<int,int> start;
     std::pair<int,int> end;
-    std::string prompt=  "Please enter your next move: ";
-    input = get_input(prompt);
-    std::vector<std::string> moves;
+    std::string prompt=  "Please enter your next move";
+    
+	while(match == false)
+	{
+		input = get_input(prompt);
+		if(std::regex_match(input, std::regex("([0-8])(\\,)([0-8])(\\-)([0-8])(\\,)([0-8])")))
+		{
+			match = true;
+		}
+	}
+	
+	std::vector<std::string> moves;
     std::vector<std::string> coords;
     boost::split(moves, input, [](char ch){return ch == '-';});
     std::cout << "Moves size: " << moves.size() << std::endl;
