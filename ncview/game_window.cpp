@@ -1,6 +1,10 @@
 #include "game_window.h"
 #include "../model/model.h"
-
+// rmit-draughts
+// https://github.com/dzrk/rmit-draughts
+// **Team Members:**
+// - Jayden Joyce: s3543824
+// - Derrick Phung: s3546900
 draughts::ncview::game_window::game_window(const player_pair & theplayers) 
     : players(theplayers), quit(false)
 {

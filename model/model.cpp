@@ -1,5 +1,10 @@
 #include "model.h"
-// source /opt/rh/devtoolset-6/enable
+// rmit-draughts
+// https://github.com/dzrk/rmit-draughts
+// **Team Members:**
+// - Jayden Joyce: s3543824
+// - Derrick Phung: s3546900
+
 Cell test[BOARD_HEIGHT][BOARD_WIDTH] =
 {
     { EMPTY, P1, EMPTY, P1, EMPTY, P1, EMPTY, P1},

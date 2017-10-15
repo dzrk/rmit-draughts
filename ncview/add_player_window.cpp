@@ -1,3 +1,8 @@
+// rmit-draughts
+// https://github.com/dzrk/rmit-draughts
+// **Team Members:**
+// - Jayden Joyce: s3543824
+// - Derrick Phung: s3546900
 #include "add_player_window.h"
 #include "ui.h"
 #include "../model/model.h"
