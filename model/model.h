@@ -67,15 +67,16 @@ namespace draughts
             void get_legal_moves(int,int);
             void check_moves(int,int); // runs can_move in every direction
             void check_jumps(int,int); // runs can_jump in every direction
-            void actually_move(int,int,int,int); // modifies the BOARD_STATE
-            
+            void actually_move(int,int,int,int,bool); // modifies the BOARD_STATE
+            std::map<int, char> m_token; //pid, token
+
+
         private:
             std::map<int, std::string> m_players; // pid, players
             std::map<int, int> m_scores; //pid, score
-            std::map<int, char> m_token; //pid, token
             char board[BOARD_HEIGHT][BOARD_WIDTH];
-            int current_player;
             std::vector<int> players;
+            int current_player;
             std::map<int,int> normal_moves; // moving one space
             std::map<int,int> jump_moves; // moving two spaces
             char current_token;

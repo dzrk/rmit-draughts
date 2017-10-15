@@ -15,9 +15,11 @@ void draughts::ncview::game_window::activate(void)
         {
             display_board();
             int playernum = themodel->get_current_player();
+            std::cout << "player num view : "<< playernum << std::endl;
+
             std::cout << "it is " << themodel->get_player_name(playernum)
                 << " and their score is " 
-                << themodel->get_player_score(playernum) << std::endl;
+                << themodel->get_player_score(playernum) << " and their id is "<< themodel->get_current_player() << std::endl;
         }
         catch(std::exception & ex)
         {
@@ -28,6 +30,8 @@ void draughts::ncview::game_window::activate(void)
         {
 
             std::pair<std::pair<int,int>,std::pair<int,int>> move_coords;
+            int playernum = themodel->get_current_player();
+
             move_coords = get_move_input();
             themodel->make_move(playernum, move_coords.first.first, 
                 move_coords.first.second, move_coords.second.first,
@@ -62,8 +66,6 @@ std::pair<std::pair<int,int>, std::pair<int,int>>
 	std::vector<std::string> moves;
     std::vector<std::string> coords;
     boost::split(moves, input, [](char ch){return ch == '-';});
-    std::cout << "Moves size: " << moves.size() << std::endl;
-
     start = strtocoord(moves[0]);
     end = strtocoord(moves[1]);
     move = std::make_pair(start, end);
