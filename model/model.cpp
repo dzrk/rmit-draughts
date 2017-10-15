@@ -1,15 +1,20 @@
 #include "model.h"
-// source /opt/rh/devtoolset-6/enable
-Cell side[BOARD_HEIGHT][BOARD_WIDTH] =
+// rmit-draughts
+// https://github.com/dzrk/rmit-draughts
+// **Team Members:**
+// - Jayden Joyce: s3543824
+// - Derrick Phung: s3546900
+
+Cell test[BOARD_HEIGHT][BOARD_WIDTH] =
 {
-    { EMPTY, P1, EMPTY, EMPTY, EMPTY, P2, EMPTY, P2},
-    { P1, EMPTY, P1, EMPTY, EMPTY, EMPTY, P2, EMPTY},
-    { EMPTY, P1, EMPTY, EMPTY, EMPTY, P2, EMPTY, P2},
-    { P1, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, P2, EMPTY},
-    { EMPTY, P1, EMPTY, EMPTY, EMPTY, P2, EMPTY, P2},
-    { P1, EMPTY, P1, EMPTY, EMPTY, EMPTY, P2, EMPTY},
-    { EMPTY, P1, EMPTY, EMPTY, EMPTY, P2, EMPTY, P2},
-    { P1, EMPTY, P1, EMPTY, EMPTY, EMPTY, P2, EMPTY}
+    { EMPTY, P1, EMPTY, P1, EMPTY, P1, EMPTY, P1},
+    { P1, EMPTY, P1, EMPTY, P1, EMPTY, P1, EMPTY},
+    { EMPTY, P1, EMPTY, P1, EMPTY, P1, EMPTY, P1},
+    { EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY},
+    { EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY},
+    { P1, EMPTY, P2, EMPTY, P2, EMPTY, P2, EMPTY},
+    { EMPTY, P2, EMPTY, P2, EMPTY, P2, EMPTY, P2},
+    { P2, EMPTY, EMPTY, EMPTY, P2, EMPTY, P2, EMPTY}
 };
 Cell BOARD_STATE[BOARD_HEIGHT][BOARD_WIDTH] =
 {
@@ -57,6 +62,10 @@ int draughts::model::model::get_player_score(int playernum)
         return it->second;
     return 0;
 }
+void draughts::model::model::update_score(int playernum)
+{
+    m_scores[playernum] ++;
+}
 
 void draughts::model::model::start_game(int plr1, int plr2)
 {
@@ -73,7 +82,12 @@ void draughts::model::model::start_game(int plr1, int plr2)
 
 int draughts::model::model::get_winner()
 {
-    return EOF;
+    for(auto pid : players){
+        if(get_player_score(pid) == 12){
+            return pid;
+        }
+     }
+    return -1;
 }
 
 std::string draughts::model::model::get_player_name(int id)
@@ -85,6 +99,7 @@ std::string draughts::model::model::get_player_name(int id)
         return it->second;
     return "";
 }
+
 
 char draughts::model::model::get_token(int x ,int y)
 {
@@ -99,7 +114,14 @@ char draughts::model::model::get_token(int x ,int y)
     }else if(BOARD_STATE[row][column] == P2){
         Cell cell = P2;
         return cell_to_char(cell);
+     }else if(BOARD_STATE[row][column] == P1_KING){
+        Cell cell = P1_KING;
+        return cell_to_char(cell);
+    }else if(BOARD_STATE[row][column] == P2_KING){
+        Cell cell = P2_KING;
+        return cell_to_char(cell);
         
+           
     }
     return '\0';
 }
@@ -111,9 +133,7 @@ void draughts::model::model::make_move(int playernum,
     int y_start = starty - 1;
     int x_end = endx - 1;
     int y_end = endy - 1;
-
-    std::cout << "player num: "<< playernum << std::endl;
-
+   
     current_token = pid_to_token(playernum);        
     normal_moves.clear();
     jump_moves.clear();
@@ -139,12 +159,14 @@ void draughts::model::model::make_move(int playernum,
             if(std::find(jump_moves.begin(), jump_moves.end(), p) != jump_moves.end()){
                     kill = true;
                     actually_move(x_start, y_start, x_end, y_end, kill);
+                    update_score(playernum);
                     moved = true;
                     jump_moves.clear();
                     x_start = x_end;
                     y_start = y_end;
                     check_jumps(x_start, y_start);
-
+                }else{
+                    jump_moves.clear();
                 }
         }
      
@@ -152,17 +174,14 @@ void draughts::model::model::make_move(int playernum,
         auto p = std::make_pair(x_end, y_end);
              
         if(std::find(normal_moves.begin(), normal_moves.end(), p) != normal_moves.end()){
-            std::cout << "move 1 " << std::endl;
             actually_move(x_start, y_start, x_end, y_end, kill);
             moved = true;
         }else{
-            std::cout << "cant find pair " << std::endl;
+            std::cout << "That token cannot move there" << std::endl;
 
-            }
-        
-       
+            } 
     }else{
-        std::cout << "invalid move" << std::endl;
+        std::cout << "That move is not possible" << std::endl;
     }
     if(moved){
         if(current_player == players[0]){
@@ -193,9 +212,11 @@ void draughts::model::model::actually_move(int x_start, int y_start, int x_end, 
         Point mid = midpoint(start,end);
         BOARD_STATE[mid.x][mid.y] = EMPTY;
         BOARD_STATE[x_start][y_start] = EMPTY;
-        if (x_end == 7 && BOARD_STATE[x_end][y_end] == P1){
+        std::cout << "x,y end: " << x_end << ", "<< y_end <<std::endl;
+
+        if (x_end == 7 && start_cell == P1){
             BOARD_STATE[x_end][y_end] = P1_KING;
-        }else if(x_end == 0 && BOARD_STATE[x_end][y_end] == P2){
+        }else if(x_end == 0 && start_cell == P2){
             BOARD_STATE[x_end][y_end] = P2_KING;
         }else{
             BOARD_STATE[x_end][y_end] = start_cell;
@@ -323,21 +344,16 @@ bool draughts::model::model::can_move(int x_start, int y_start, int x_end, int y
 {
     char pos_start = get_token(x_start+1, y_start+1);
     char pos_end = get_token(x_end+1, y_end+1);
-    std::cout << "@@@@@@@@@@@@" << std::endl;
-    std::cout << "end x,y: " << x_end+1;
-    std::cout << ", " << y_end+1 << std::endl;
+
     if(boundary_check(x_end, y_end) == false){ // check if destination is on the board 
-        std::cout << "outside board" << x_end << ", "<< y_end<<std::endl;
 
         return false;
         }
     if(pos_end != cell_to_char(EMPTY)){ // end destination already contains a piece - can jump?
-        std::cout << "cell not empty " << pos_end << std::endl;
         return false;
         }
-    if(current_token == X_TOKEN || current_token == X_KING){ // checks if chosen piece is the players piece 
-        if(pos_start != cell_to_char(P1)){ // x pieces can only move down 
-            std::cout << "not ur piece " << pos_start << std::endl;
+    if(current_token == X_TOKEN || pos_start == X_KING){ // checks if chosen piece is the players piece 
+        if(pos_start != cell_to_char(P1) && pos_start != cell_to_char(P1_KING)){ // x pieces can only move down 
             return false;    
         }
         if(x_start > x_end && current_token != X_KING){
@@ -347,31 +363,39 @@ bool draughts::model::model::can_move(int x_start, int y_start, int x_end, int y
         std::cout << "Legal move " << std::endl;
         return true; // legal move
     }else{
-        if(pos_start != cell_to_char(P2)) // o pieces can only move up
+        if(pos_start != cell_to_char(P2) && pos_start != cell_to_char(P2_KING)) // o pieces can only move up
             return false; 
-        if(x_start < x_end && current_token != O_KING)
+        if(x_start < x_end && pos_start != O_KING)
             return false;
         return true; // legal move
     }
 
-} // needs else to remove warning
+} 
 
 bool draughts::model::model::can_jump(int x_start, int y_start, int x_mid, int y_mid, int x_end, int y_end){
     char pos_start = get_token(x_start+1, y_start+1); // current player
     char pos_mid = get_token(x_mid+1, y_mid+1);  // enemy player
     char pos_end = get_token(x_end+1, y_end+1); // empty
-
-    if(boundary_check(x_end, y_end) == false){ // check if destination is on the board 
+    std::cout << "@@@@@@@@@@@@" << std::endl;
+    std::cout << "end x,y: " << x_end+1;
+    std::cout << ", " << y_end+1 << std::endl;
+    if(boundary_check(x_end, y_end) == false){ // check if destination is on the board
+            std::cout << "outside board" << x_end << ", "<< y_end<<std::endl;
+ 
         return false;
         }
     if(pos_end != cell_to_char(EMPTY)){
+            std::cout << "cell not empty " << pos_end << std::endl;
+
         return false;   // end destination already contains a piece
         }
     if(current_token == X_TOKEN){
-        if(pos_start != cell_to_char(P1)){ // token belongs to player
+        if(pos_start != cell_to_char(P1) && pos_start != cell_to_char(P1_KING)){ // token belongs to player
+                    std::cout << "not ur piece " << pos_start << std::endl;
+
             return false;
             }
-        if(x_start > x_end){ // can only move down
+        if(x_start > x_end && pos_start != X_KING){ // can only move down
             std::cout << "can only kill down " << std::endl;
             return false;
             }
@@ -384,9 +408,12 @@ bool draughts::model::model::can_jump(int x_start, int y_start, int x_mid, int y
 
         return true;
     }else{
-        if(pos_start == P2 && x_start > x_end) // o can only move up
+        if(pos_start != cell_to_char(P2) &&  pos_start != cell_to_char(P2_KING)) // token belongs to player
             return false;
-        if(pos_mid != P1 && pos_mid != P1_KING)
+        if(x_start < x_end && pos_start != O_KING){
+            return false;
+        }
+        if(pos_mid != cell_to_char(P1) && pos_mid != cell_to_char(P1_KING))
             return false;
         return true;
     }
@@ -436,12 +463,6 @@ void draughts::model::model::check_moves(int x_start, int y_start){
 }
 
 void draughts::model::model::get_legal_moves(int x_start, int y_start){
-    char KING;
-    if(current_token == X_TOKEN){
-        KING = P1_KING;
-    }else{
-        KING = P2_KING;
-    }
     check_jumps(x_start, y_start);
     std::cout << "jump size " << jump_moves.size() << std::endl;
 
