@@ -76,6 +76,7 @@ namespace draughts
             void actually_move(int,int,int,int,bool); // modifies the BOARD_STATE
             std::map<int, char> m_token; //pid, token
             Point midpoint(const Point&,const Point&);
+            void update_score(int);
 
         private:
             std::map<int, std::string> m_players; // pid, players
