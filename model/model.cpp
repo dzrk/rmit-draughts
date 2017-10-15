@@ -30,6 +30,8 @@ Point draughts::model::model::midpoint(const Point& a, const Point& b) {
     ret.y = (a.y + b.y) / 2;
     return ret;
 }
+
+
 std::unique_ptr<draughts::model::model> draughts::model::model::instance =
 nullptr;
 
@@ -109,6 +111,7 @@ void draughts::model::model::make_move(int playernum,
     int y_start = starty - 1;
     int x_end = endx - 1;
     int y_end = endy - 1;
+
     std::cout << "player num: "<< playernum << std::endl;
 
     current_token = pid_to_token(playernum);        
@@ -118,43 +121,50 @@ void draughts::model::model::make_move(int playernum,
 
     for(auto elem : normal_moves)
     {
-       std::cout << "normal_moves: " << elem.first << " " << elem.second << "\n";
+       std::cout << "normal_moves: " << elem.first +1 << " " << elem.second +1<< "\n";
     }
     for(auto elem : jump_moves)
     {
-       std::cout << "jump_moves: " << elem.first << " " << elem.second << "\n";
+       std::cout << "jump_moves: " << elem.first+1 << " " << elem.second+1 << "\n";
     }
 
-    std::map<int,int>::iterator it;
     bool kill = false;
     bool moved = false;
 
     if (jump_moves.size() > 0)
     {
-        it = jump_moves.find(x_end);
-        if(it != jump_moves.end())
-        {
-            if(y_end == it->second)
-            {
-                kill = true;
-                actually_move(x_start, y_start, x_end, y_end, kill);
-                moved = true;
-            }
+        while(jump_moves.size()>0){
+            auto p = std::make_pair(x_end, y_end);
+             
+            if(std::find(jump_moves.begin(), jump_moves.end(), p) != jump_moves.end()){
+                    kill = true;
+                    actually_move(x_start, y_start, x_end, y_end, kill);
+                    moved = true;
+                    jump_moves.clear();
+                    x_start = x_end;
+                    y_start = y_end;
+                    check_jumps(x_start, y_start);
+
+                }
         }
+     
     }else if(normal_moves.size() > 0){
-        it = normal_moves.find(x_end);
-        if(it != normal_moves.end())
-        {
-            if(y_end == it->second)
-            {
-                actually_move(x_start, y_start, x_end, y_end, kill);
-                moved = true;
+        auto p = std::make_pair(x_end, y_end);
+             
+        if(std::find(normal_moves.begin(), normal_moves.end(), p) != normal_moves.end()){
+            std::cout << "move 1 " << std::endl;
+            actually_move(x_start, y_start, x_end, y_end, kill);
+            moved = true;
+        }else{
+            std::cout << "cant find pair " << std::endl;
+
             }
-        }
+        
+       
     }else{
         std::cout << "invalid move" << std::endl;
     }
-    if(kill == false && moved){
+    if(moved){
         if(current_player == players[0]){
             current_player = players[1];
             std::cout << "swapped " << std::endl;
@@ -163,11 +173,11 @@ void draughts::model::model::make_move(int playernum,
             std::cout << "swapped " << std::endl;
 
             }
+
     }
-
-
-    
 }
+
+
 void draughts::model::model::actually_move(int x_start, int y_start, int x_end, int y_end, bool kill)
 {
     Cell start_cell = BOARD_STATE[x_start][y_start];
@@ -183,7 +193,13 @@ void draughts::model::model::actually_move(int x_start, int y_start, int x_end, 
         Point mid = midpoint(start,end);
         BOARD_STATE[mid.x][mid.y] = EMPTY;
         BOARD_STATE[x_start][y_start] = EMPTY;
-        BOARD_STATE[x_end][y_end] = start_cell;
+        if (x_end == 7 && BOARD_STATE[x_end][y_end] == P1){
+            BOARD_STATE[x_end][y_end] = P1_KING;
+        }else if(x_end == 0 && BOARD_STATE[x_end][y_end] == P2){
+            BOARD_STATE[x_end][y_end] = P2_KING;
+        }else{
+            BOARD_STATE[x_end][y_end] = start_cell;
+        }
     }else{
         BOARD_STATE[x_start][y_start] = EMPTY;
         BOARD_STATE[x_end][y_end] = start_cell;
@@ -307,28 +323,35 @@ bool draughts::model::model::can_move(int x_start, int y_start, int x_end, int y
 {
     char pos_start = get_token(x_start+1, y_start+1);
     char pos_end = get_token(x_end+1, y_end+1);
-
+    std::cout << "@@@@@@@@@@@@" << std::endl;
+    std::cout << "end x,y: " << x_end+1;
+    std::cout << ", " << y_end+1 << std::endl;
     if(boundary_check(x_end, y_end) == false){ // check if destination is on the board 
+        std::cout << "outside board" << x_end << ", "<< y_end<<std::endl;
+
         return false;
         }
     if(pos_end != cell_to_char(EMPTY)){ // end destination already contains a piece - can jump?
+        std::cout << "cell not empty " << pos_end << std::endl;
         return false;
         }
-    if(current_token == X_TOKEN){ // checks if chosen piece is the players piece 
+    if(current_token == X_TOKEN || current_token == X_KING){ // checks if chosen piece is the players piece 
         if(pos_start != cell_to_char(P1)){ // x pieces can only move down 
+            std::cout << "not ur piece " << pos_start << std::endl;
             return false;    
         }
-        if(x_start > x_end)
+        if(x_start > x_end && current_token != X_KING){
+            std::cout << "can only move down" << std::endl;
             return false;
-        return true; // legal move
-    }else if(current_token == O_TOKEN){
-        if(pos_start == P2) // o pieces can only move up
-            return false; 
-        if(x_start < x_end)
-            return false;
+        }
+        std::cout << "Legal move " << std::endl;
         return true; // legal move
     }else{
-        return false;
+        if(pos_start != cell_to_char(P2)) // o pieces can only move up
+            return false; 
+        if(x_start < x_end && current_token != O_KING)
+            return false;
+        return true; // legal move
     }
 
 } // needs else to remove warning
@@ -339,16 +362,13 @@ bool draughts::model::model::can_jump(int x_start, int y_start, int x_mid, int y
     char pos_end = get_token(x_end+1, y_end+1); // empty
 
     if(boundary_check(x_end, y_end) == false){ // check if destination is on the board 
-        std::cout << "outside board" << x_end << ", "<< y_end<<std::endl;
         return false;
         }
     if(pos_end != cell_to_char(EMPTY)){
-        std::cout << "cell not empty " << pos_end << std::endl;
         return false;   // end destination already contains a piece
         }
     if(current_token == X_TOKEN){
         if(pos_start != cell_to_char(P1)){ // token belongs to player
-            std::cout << "not ur piece " << pos_start << std::endl;
             return false;
             }
         if(x_start > x_end){ // can only move down
@@ -384,13 +404,13 @@ void draughts::model::model::check_jumps(int x_start, int y_start){
     int y_down = y_start - 1;
 
     if(can_jump(x_start, y_start, x_up, y_up, x_up_up, y_up_up))
-        jump_moves.insert(std::pair<int,int>(x_up_up, y_up_up));          // 2,2
+        jump_moves.push_back(std::make_pair(x_up_up, y_up_up));          // 2,2
     if(can_jump(x_start, y_start, x_up, y_down, x_up_up, y_down_down))
-        jump_moves.insert(std::pair<int,int>(x_up_up, y_down_down));           // 2,-2
+        jump_moves.push_back(std::make_pair(x_up_up, y_down_down));           // 2,-2
     if(can_jump(x_start, y_start, x_down, y_up, x_down_down, y_up_up))
-        jump_moves.insert(std::pair<int,int>(x_down_down, y_up_up));      // -2,2
+        jump_moves.push_back(std::make_pair(x_down_down, y_up_up));      // -2,2
     if(can_jump(x_start, y_start, x_down, y_down, x_down_down, y_down_down))
-        jump_moves.insert(std::pair<int,int>(x_down_down, y_down_down));  // -2,-2
+        jump_moves.push_back(std::make_pair(x_down_down, y_down_down));  // -2,-2
 }
 
 void draughts::model::model::check_moves(int x_start, int y_start){
@@ -398,50 +418,20 @@ void draughts::model::model::check_moves(int x_start, int y_start){
     int x_down = x_start - 1;
     int y_up = y_start + 1;
     int y_down = y_start - 1;
-    std::cout << "@@@@@@@@@@@@@@" << std::endl;
 
     if(can_move(x_start, y_start, x_up, y_up)){
-        normal_moves.insert(std::pair<int,int>(x_up, y_up));        // 1,1
-        std::cout << "added moves xup yup : " << x_up << " " << y_up << std::endl;
-        }else{
-        std::cout << "didnt add moves xup yup : " << x_up << " " << y_up << std::endl;
-        std::cout << "start x,y: " << x_start;
-        std::cout << ", " << y_start << std::endl;
-        std::cout << "@@@@@@@@@@@@@@" << std::endl;
-
+        normal_moves.push_back(std::make_pair(x_up, y_up));        // 1,1
 
         }
-    if(can_move(x_start, y_start, x_up, y_down)){
-        normal_moves.insert(std::pair<int,int>(x_up, y_down));      // 1,-1
-        std::cout << "added moves xup ydown: " << x_up << " " << y_down << std::endl;
-                std::cout << "@@@@@@@@@@@@@@" << std::endl;
+    if(can_move(x_start, y_start, x_up, y_down))
+        normal_moves.push_back(std::make_pair(x_up, y_down));      // 1,-1
+               
+    if(can_move(x_start, y_start, x_down, y_up))
+        normal_moves.push_back(std::make_pair(x_down, y_up));      // -1,1
 
-        }else{
-        std::cout << "didnt add moves xup y_down : " << x_up << " " << y_down << std::endl;
-        std::cout << "start x,y: " << x_start;
-        std::cout << ", " << y_start << std::endl;
-                std::cout << "@@@@@@@@@@@@@@" << std::endl;
-
-        }
-    if(can_move(x_start, y_start, x_down, y_up)){
-        normal_moves.insert(std::pair<int,int>(x_down, y_up));      // -1,1
-        std::cout << "added moves: " << x_down << " " << y_up << std::endl;
-        }else{        
-        std::cout << "didnt add moves x_down y_up : " << x_down << " " << y_up << std::endl;
-        std::cout << "start x,y: " << x_start;
-        std::cout << ", " << y_start << std::endl;
-                std::cout << "@@@@@@@@@@@@@@" << std::endl;
-
-        }
     if(can_move(x_start, y_start, x_down, y_down)){
-        normal_moves.insert(std::pair<int,int>(x_down, y_down));    // -1,-1
-        std::cout << "added moves: " << x_down << " " << y_down << std::endl;
-        }else{
-        std::cout << "didnt add moves x_down y_down : " << x_down << " " << y_down << std::endl;
-        std::cout << "start x,y: " << x_start;
-        std::cout << ", " << y_start << std::endl;
-                std::cout << "@@@@@@@@@@@@@@" << std::endl;
-
+        normal_moves.push_back(std::make_pair(x_down, y_down));    // -1,-1
+       
         }
 }
 
