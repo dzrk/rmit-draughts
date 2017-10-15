@@ -23,6 +23,13 @@ Cell BOARD_STATE[BOARD_HEIGHT][BOARD_WIDTH] =
     { P2, EMPTY, P2, EMPTY, P2, EMPTY, P2, EMPTY}
 };
 
+
+Point draughts::model::model::midpoint(const Point& a, const Point& b) {
+    Point ret;
+    ret.x = (a.x + b.x) / 2;
+    ret.y = (a.y + b.y) / 2;
+    return ret;
+}
 std::unique_ptr<draughts::model::model> draughts::model::model::instance =
 nullptr;
 
@@ -120,7 +127,7 @@ void draughts::model::model::make_move(int playernum,
 
     std::map<int,int>::iterator it;
     bool kill = false;
-
+    bool moved = false;
 
     if (jump_moves.size() > 0)
     {
@@ -131,6 +138,7 @@ void draughts::model::model::make_move(int playernum,
             {
                 kill = true;
                 actually_move(x_start, y_start, x_end, y_end, kill);
+                moved = true;
             }
         }
     }else if(normal_moves.size() > 0){
@@ -140,12 +148,13 @@ void draughts::model::model::make_move(int playernum,
             if(y_end == it->second)
             {
                 actually_move(x_start, y_start, x_end, y_end, kill);
+                moved = true;
             }
         }
     }else{
         std::cout << "invalid move" << std::endl;
     }
-    if(kill == false){
+    if(kill == false && moved){
         if(current_player == players[0]){
             current_player = players[1];
             std::cout << "swapped " << std::endl;
@@ -161,13 +170,23 @@ void draughts::model::model::make_move(int playernum,
 }
 void draughts::model::model::actually_move(int x_start, int y_start, int x_end, int y_end, bool kill)
 {
-    Cell moving = BOARD_STATE[x_start][y_start];
+    Cell start_cell = BOARD_STATE[x_start][y_start];
     if(kill){
+        Point start = { 
+            x_start,
+            y_start,
+        };
+        Point end = { 
+            x_end,
+            y_end,
+        };
+        Point mid = midpoint(start,end);
+        BOARD_STATE[mid.x][mid.y] = EMPTY;
         BOARD_STATE[x_start][y_start] = EMPTY;
-        BOARD_STATE[x_end][y_end] = moving;
+        BOARD_STATE[x_end][y_end] = start_cell;
     }else{
         BOARD_STATE[x_start][y_start] = EMPTY;
-        BOARD_STATE[x_end][y_end] = moving;
+        BOARD_STATE[x_end][y_end] = start_cell;
     }
 }
 
@@ -290,46 +309,59 @@ bool draughts::model::model::can_move(int x_start, int y_start, int x_end, int y
     char pos_end = get_token(x_end+1, y_end+1);
 
     if(boundary_check(x_end, y_end) == false){ // check if destination is on the board 
-        std::cout << "outside board" << x_end << ", "<< y_end<<std::endl;
         return false;
         }
     if(pos_end != cell_to_char(EMPTY)){ // end destination already contains a piece - can jump?
-        std::cout << "cell not empty " << pos_end << std::endl;
         return false;
         }
     if(current_token == X_TOKEN){ // checks if chosen piece is the players piece 
         if(pos_start != cell_to_char(P1)){ // x pieces can only move down 
             return false;    
         }
-
-        std::cout << "ONE LEGAL" << std::endl;
+        if(x_start > x_end)
+            return false;
         return true; // legal move
     }else if(current_token == O_TOKEN){
-        std::cout << "current tok is o" << std::endl;
-
-        if(pos_start == P2 && x_start > x_end) // o pieces can only move up
+        if(pos_start == P2) // o pieces can only move up
             return false; 
+        if(x_start < x_end)
+            return false;
         return true; // legal move
     }else{
-        std::cout << "curent token: " << current_token << std::endl;
         return false;
     }
 
 } // needs else to remove warning
 
 bool draughts::model::model::can_jump(int x_start, int y_start, int x_mid, int y_mid, int x_end, int y_end){
-    char pos_start = get_token(x_start, y_start);
-    char pos_mid = get_token(x_mid, y_mid);
-    char pos_end = get_token(x_end, y_end);
+    char pos_start = get_token(x_start+1, y_start+1); // current player
+    char pos_mid = get_token(x_mid+1, y_mid+1);  // enemy player
+    char pos_end = get_token(x_end+1, y_end+1); // empty
 
-    if(pos_end != EMPTY)
+    if(boundary_check(x_end, y_end) == false){ // check if destination is on the board 
+        std::cout << "outside board" << x_end << ", "<< y_end<<std::endl;
+        return false;
+        }
+    if(pos_end != cell_to_char(EMPTY)){
+        std::cout << "cell not empty " << pos_end << std::endl;
         return false;   // end destination already contains a piece
-
+        }
     if(current_token == X_TOKEN){
-        if(pos_start == P1 && x_end > x_start) // x can only move down
+        if(pos_start != cell_to_char(P1)){ // token belongs to player
+            std::cout << "not ur piece " << pos_start << std::endl;
             return false;
-        if(pos_mid != P2 && pos_mid != P2_KING)
+            }
+        if(x_start > x_end){ // can only move down
+            std::cout << "can only kill down " << std::endl;
             return false;
+            }
+        if(pos_mid != cell_to_char(P2) && pos_mid != cell_to_char(P2_KING)){ // must kill something
+            std::cout << "NOTHING TO KILL " << pos_mid << std::endl;
+            return false;
+            }
+        std::cout << "added jump " << x_end << ", " << y_end << std::endl;
+
+
         return true;
     }else{
         if(pos_start == P2 && x_start > x_end) // o can only move up
@@ -366,7 +398,7 @@ void draughts::model::model::check_moves(int x_start, int y_start){
     int x_down = x_start - 1;
     int y_up = y_start + 1;
     int y_down = y_start - 1;
-            std::cout << "@@@@@@@@@@@@@@" << std::endl;
+    std::cout << "@@@@@@@@@@@@@@" << std::endl;
 
     if(can_move(x_start, y_start, x_up, y_up)){
         normal_moves.insert(std::pair<int,int>(x_up, y_up));        // 1,1
@@ -420,9 +452,13 @@ void draughts::model::model::get_legal_moves(int x_start, int y_start){
     }else{
         KING = P2_KING;
     }
-    //check_jumps(x_start, y_start);
+    check_jumps(x_start, y_start);
+    std::cout << "jump size " << jump_moves.size() << std::endl;
+
     //check for jump first
-    check_moves(x_start, y_start);
+    if(jump_moves.size() == 0){
+        check_moves(x_start, y_start);
+    }
 
 
 }

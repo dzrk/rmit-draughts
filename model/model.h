@@ -30,6 +30,11 @@ typedef enum cell
     P2_KING
 } Cell;
 
+struct Point
+{
+  int x;
+  int y;    
+};
 
 namespace draughts
 {
@@ -69,7 +74,7 @@ namespace draughts
             void check_jumps(int,int); // runs can_jump in every direction
             void actually_move(int,int,int,int,bool); // modifies the BOARD_STATE
             std::map<int, char> m_token; //pid, token
-
+            Point midpoint(const Point&,const Point&);
 
         private:
             std::map<int, std::string> m_players; // pid, players

@@ -10,7 +10,6 @@ void draughts::ncview::game_window::activate(void)
 {
     while(!quit)
     {
-        int playernum = EOF;
         try
         {
             display_board();
