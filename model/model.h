@@ -6,6 +6,7 @@
 #include <map>
 #include <thread>
 #include <chrono>
+#include <algorithm>
 
 #pragma once
 const int BOARD_WIDTH = 8;
@@ -82,8 +83,8 @@ namespace draughts
             char board[BOARD_HEIGHT][BOARD_WIDTH];
             std::vector<int> players;
             int current_player;
-            std::map<int,int> normal_moves; // moving one space
-            std::map<int,int> jump_moves; // moving two spaces
+            std::vector<std::pair<int,int>> normal_moves; // moving one space
+            std::vector<std::pair<int,int>> jump_moves; // moving two spaces
             char current_token;
         };
     }
